@@ -176,7 +176,7 @@ if [ -d "$NEWVER/deleted" ]; then
             if [ "$has_real" -eq 0 ]; then
                 touch "$NEWVER/deleted/$sub/.gitkeep"
             fi
-        fi
+        done
     done
 fi
 
