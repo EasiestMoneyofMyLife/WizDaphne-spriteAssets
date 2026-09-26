@@ -1,0 +1,41 @@
+name: Release Assets
+
+on:
+  push:
+    tags:
+      - 'Ver*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Rebuild full version
+        run: bash rebuild_full.sh
+
+      - name: Zip full assets
+        run: |
+          cd ${GITHUB_REF_NAME}_full
+          zip -r ../${GITHUB_REF_NAME}_full.zip .
+          cd ..
+
+      - name: Zip new assets
+        run: |
+          zip -r ${GITHUB_REF_NAME}_new.zip ${GITHUB_REF_NAME}/
+
+      - name: Create release and upload
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body: "${{ github.ref_name }} 资源"
+          files: |
+            ${{ github.ref_name }}_full.zip
+            ${{ github.ref_name }}_new.zip
