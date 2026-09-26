@@ -4,6 +4,16 @@ on:
   push:
     tags:
       - 'Ver*'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: '仅调试，不发布 Release'
+        type: boolean
+        default: true
+      ref:
+        description: '要调试的 tag 或分支'
+        type: string
+        default: 'main'
 
 jobs:
   release:
@@ -15,23 +25,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
           lfs: true
           fetch-depth: 0
 
+      - name: Verify repo structure
+        run: |
+          echo "=== 仓库根目录 ==="
+          ls -la
+          echo ""
+          echo "=== old/ 文件数 ==="
+          find old -type f 2>/dev/null | wc -l
+          echo ""
+          echo "=== 版本目录 ==="
+          ls -d Ver*/ 2>/dev/null
+          echo ""
+          echo "=== LFS 文件数 ==="
+          git lfs ls-files | wc -l
+
+      - name: Debug only
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug }}
+        run: |
+          echo "调试模式，跳过打包和发布"
+          echo "GITHUB_REF_NAME=$GITHUB_REF_NAME"
+          echo "检查重建结果:"
+          bash rebuild_full.sh
+          echo ""
+          echo "=== 重建产物 ==="
+          ls -d *_full/ 2>/dev/null
+          for d in *_full/; do
+            echo "$d 文件数: $(find "$d" -type f | wc -l)"
+            echo "$d/deleted 文件数: $(find "$d/deleted" -type f 2>/dev/null | wc -l)"
+          done
+
       - name: Rebuild full version
+        if: ${{ github.event_name == 'push' || !inputs.debug }}
         run: bash rebuild_full.sh
 
       - name: Zip full assets
+        if: ${{ github.event_name == 'push' || !inputs.debug }}
         run: |
-          cd ${GITHUB_REF_NAME}_full
+          FULL_DIR=$(ls -d *_full/ | sort -V | tail -n 1)
+          cd "$FULL_DIR"
           zip -r ../${GITHUB_REF_NAME}_full.zip .
           cd ..
 
       - name: Zip new assets
+        if: ${{ github.event_name == 'push' || !inputs.debug }}
         run: |
           zip -r ${GITHUB_REF_NAME}_new.zip ${GITHUB_REF_NAME}/
 
       - name: Create release and upload
+        if: ${{ github.event_name == 'push' || !inputs.debug }}
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ github.ref_name }}
