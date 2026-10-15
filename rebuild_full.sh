@@ -6,7 +6,7 @@
 #       若未传目标版本，则使用仓库中版本号最大的版本
 #       删除的文件会保留到输出目录的 deleted/<分类>/ 下，并生成 deleted_log.txt
 #       删除日志仅记录第一次从结果中消失的版本，分类从前一版本检索
-#       遍历时跳过 .gitkeep 和 xxx#xxx.png
+#       遍历时跳过 .gitkeep、xxx#xxx.png，以及所有 *_full 目录
 
 set -e
 
@@ -14,7 +14,8 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 
 # 1. 找出所有版本目录，按版本号排序
-VERSIONS=($(ls -d Ver*/ 2>/dev/null | sed 's#/##' | sort -V))
+#    排除以 _full 结尾的目录，避免把重建产物当成版本目录
+VERSIONS=($(ls -d Ver*/ 2>/dev/null | sed 's#/##' | grep -v '_full$' | sort -V))
 
 if [ ${#VERSIONS[@]} -eq 0 ]; then
     echo "错误: 未找到任何 Ver* 版本目录"
@@ -27,6 +28,11 @@ if [ -n "$1" ]; then
     # 确认该版本目录存在
     if [ ! -d "$TARGET_VER" ]; then
         echo "错误: 版本目录不存在: $TARGET_VER"
+        exit 1
+    fi
+    # 确认目标版本不是 _full 目录
+    if [[ "$TARGET_VER" == *_full ]]; then
+        echo "错误: 目标版本不能是 _full 目录: $TARGET_VER"
         exit 1
     fi
 else
