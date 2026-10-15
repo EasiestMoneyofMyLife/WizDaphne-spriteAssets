@@ -4,7 +4,7 @@
 
 使用[AssetStudioMod](https://github.com/aelurum/AssetStudioMod)解包的外部未加密资源。
 
-需要更详细的加密资源，请参考[wizdaphne-unpack](https://github.com/yueecui/wizdaphne-unpack)
+需要更详细的加密资源，请参考[wizdaphne-unpack](https://github.com/yueecui/wizdaphne-unpack)。
 
 
 ## 下载
@@ -22,7 +22,7 @@ git clone https://github.com/EasiestMoneyofMyLife/WizDaphne-spriteAssets.git
 ```
 
 ### 2. 解包新内容
-使用AssetStudioMod解包新内容，并将Sprite资源放入仓库根目录（WizDaphne-spriteAssets/）
+使用AssetStudioMod解包新内容，并将Sprite资源放入仓库根目录（WizDaphne-spriteAssets/）。
 
 ### 3. 重建上版本的完整内容
 ```
