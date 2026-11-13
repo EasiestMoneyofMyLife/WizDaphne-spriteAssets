@@ -1,4 +1,6 @@
 Sprite/
+venv/
+classify_and_diff_old.sh
 *_full/
 *.rar
 *.zip
